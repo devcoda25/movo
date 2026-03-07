@@ -1,0 +1,143 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    function isEscort() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'escort';
+    }
+    
+    function isClient() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'client';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId) || isAdmin();
+      
+      // User profiles subcollection
+      match /profiles/{profileId} {
+        allow read: if true;
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+    
+    // Escort profiles
+    match /escort_profiles/{profileId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (
+        request.auth.uid == profileId || isAdmin()
+      );
+    }
+    
+    // Services (read by all, write by admin)
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Locations (read by anyone, write by admin)
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Bookings
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.clientId ||
+        request.auth.uid == resource.data.escortId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && isClient();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.escortId ||
+        request.auth.uid == resource.data.clientId ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+    
+    // Messages (for support chat)
+    match /messages/{messageId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.receiverId ||
+        request.auth.uid == 'admin_support' ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.receiverId ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+    
+    // Conversations
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.participants ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid in resource.data.participants ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+    
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+    }
+    
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isClient();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Favorites
+    match /favorites/{favoriteId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.clientId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && isClient();
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.clientId ||
+        isAdmin()
+      );
+    }
+  }
+}
