@@ -5,11 +5,10 @@ const config: CapacitorConfig = {
   appName: 'Movo',
   webDir: '.next',
   server: {
-    // For development, use local server
-    // Change this to your computer's local IP address
-    url: 'http://192.168.1.100:3000',
+    // Production URL - app will load from Netlify
+    url: 'https://movoapp.netlify.app',
     // For Android
-    androidScheme: 'http'
+    androidScheme: 'https'
   },
   plugins: {
     PushNotifications: {

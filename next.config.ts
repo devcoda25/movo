@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
 
   // Environment variables exposed to the app
   env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://movo.app',
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://movoapp.netlify.app',
   },
 
   // Compiler options

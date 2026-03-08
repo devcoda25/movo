@@ -193,13 +193,13 @@ const isPushSupported = (): boolean => {
 
 export const requestNotificationPermission = async () => {
     console.log('[firebase] requestNotificationPermission called');
-    
+
     // Check if push notifications are supported
     if (!isPushSupported()) {
         console.log('[firebase] Push notifications not supported in this browser');
         return { supported: false, token: null };
     }
-    
+
     if (!messaging) {
         console.log('[firebase] messaging is null - checking why...');
         // Try to reinitialize messaging
@@ -213,17 +213,17 @@ export const requestNotificationPermission = async () => {
             return { supported: true, token: null, error: e };
         }
     }
-    
+
     if (!messaging) {
         console.log('[firebase] messaging still null, cannot request permission');
         return { supported: true, token: null };
     }
-    
+
     try {
         console.log('[firebase] Requesting notification permission...');
         const permission = await Notification.requestPermission();
         console.log('[firebase] Permission status:', permission);
-        
+
         if (permission === 'granted') {
             console.log('[firebase] Permission granted, getting FCM token...');
             const token = await getToken(messaging, {
