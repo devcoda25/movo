@@ -162,8 +162,14 @@ export default function EscortProfilePage() {
             formData.append('file', file);
             formData.append('folder', `profiles/${userId}`);
 
+            // Get the auth token for authorization
+            const authToken = (user as any).id || (user as any).uid;
+
             const response = await fetch('/api/upload', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
                 body: formData,
             });
 

@@ -164,8 +164,14 @@ export default function EscortMediaPage() {
       formData.append('file', file);
       formData.append('folder', `escorts/${userId}/${type}s`);
 
+      // Get the auth token for authorization
+      const authToken = (user as any).id || (user as any).uid;
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
         body: formData,
       });
 
