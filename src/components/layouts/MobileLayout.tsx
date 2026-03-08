@@ -49,13 +49,13 @@ export default function MobileLayout({
           if (result?.token) {
             console.log('✅ Capacitor Push Token:', result.token);
             // Save token to user profile in Firestore
-            if (!user?.uid) {
+            if (!user?.id) {
               console.warn('No authenticated user; skipping saving Capacitor token');
               return;
             }
             try {
               const { updateDocument } = await import('@/lib/firebase');
-              await updateDocument('users', user.uid, {
+              await updateDocument('users', user.id, {
                 capacitorToken: result.token
               });
               console.log('✅ Capacitor Token saved to user profile');
