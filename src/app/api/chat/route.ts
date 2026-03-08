@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
 
+// Return error if Firebase Admin is not configured
+if (!adminDb) {
+    console.error('Firebase Admin not initialized - missing environment variables');
+}
+
 // Collection names
 const COLLECTIONS = {
     CONVERSATIONS: 'conversations',
@@ -24,6 +29,9 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Get conversations for a user
 export async function GET(request: NextRequest) {
+    if (!adminDb) {
+        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
     try {
         const { isValid, userId } = await verifyUser(request);
         if (!isValid || !userId) {
@@ -59,6 +67,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Create or get a conversation
 export async function POST(request: NextRequest) {
+    if (!adminDb) {
+        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
     try {
         const { isValid, userId } = await verifyUser(request);
         if (!isValid || !userId) {

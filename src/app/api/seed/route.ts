@@ -2,20 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase/auth';
 
+// Return error if Firebase Admin is not configured
+if (!adminDb) {
+    console.error('Firebase Admin not initialized - missing environment variables');
+}
+
 // Helper to verify admin user
 async function verifyAdminUser(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return { isAdmin: false, userId: null };
-  
-  try {
-    const token = authHeader.replace('Bearer ', '');
-    // In production, verify Firebase ID token properly
-    // For now, we'll check if the token contains 'admin' or is the admin UID
-    const isAdmin = token.includes('admin') || token === 'admin-user';
-    return { isAdmin, userId: token };
-  } catch {
-    return { isAdmin: false, userId: null };
-  }
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) return { isAdmin: false, userId: null };
+
+    try {
+        const token = authHeader.replace('Bearer ', '');
+        // In production, verify Firebase ID token properly
+        // For now, we'll check if the token contains 'admin' or is the admin UID
+        const isAdmin = token.includes('admin') || token === 'admin-user';
+        return { isAdmin, userId: token };
+    } catch {
+        return { isAdmin: false, userId: null };
+    }
 }
 
 // Collection names
@@ -117,6 +122,9 @@ const locations = [
 ];
 
 export async function POST(request: NextRequest) {
+    if (!adminDb) {
+        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
     try {
         // Verify admin user
         const { isAdmin } = await verifyAdminUser(request);
